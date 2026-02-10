@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zorgplan Demo - Zorgverleners Platform</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .logo { font-size: 1.5rem; font-weight: 700; }
+        .logo span { color: #93c5fd; }
+        .user-info { display: flex; align-items: center; gap: 1rem; }
+        .avatar {
+            width: 40px; height: 40px;
+            background: #93c5fd;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600;
+        }
+        .nav {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .nav-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            color: var(--text-light);
+        }
+        .nav-item:hover { color: var(--primary); }
+        .nav-item.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            font-weight: 600;
+        }
+        .main { display: flex; min-height: calc(100vh - 120px); }
+        .sidebar {
+            width: 280px;
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+        }
+        .content { flex: 1; padding: 2rem; overflow-y: auto; }
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .card-title { font-size: 1.1rem; font-weight: 600; }
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+        .btn-success { background: var(--secondary); color: white; }
+        .patient-card {
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .patient-card:hover {
+            border-color: var(--primary);
+            background: #f0f9ff;
+        }
+        .patient-card.selected {
+            border-color: var(--primary);
+            background: #dbeafe;
+        }
+        .patient-name { font-weight: 600; margin-bottom: 0.25rem; }
+        .patient-info { font-size: 0.85rem; color: var(--text-light); }
+        .grid { display: grid; gap: 1.5rem; }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 0.25rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 2px solid white;
+        }
+        .timeline-date {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+        .timeline-content {
+            background: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+        }
+        .form-group { margin-bottom: 1rem; }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+        .checklist-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--secondary);
+        }
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            transition: width 0.3s;
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .alert-warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+        }
+        .alert-info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+        .team-member {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+        .team-member:hover { background: #f8fafc; }
+        .team-avatar {
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600;
+            color: white;
+        }
+        .search-box {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">Zorg<span>Plan</span></div>
+        <div class="user-info">
+            <span>Dr. Sarah Janssen</span>
+            <div class="avatar">SJ</div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-item active" onclick="showTab('dashboard')">Dashboard</div>
+        <div class="nav-item" onclick="showTab('zorgplannen')">Zorgplannen</div>
+        <div class="nav-item" onclick="showTab('team')">Zorgteam</div>
+        <div class="nav-item" onclick="showTab('taken')">Taken</div>
+        <div class="nav-item" onclick="showTab('communicatie')">Communicatie</div>
+    </nav>
+
+    <div class="main">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="search-box">
+                <input type="text" placeholder="Zoek patient..." id="patientSearch" oninput="filterPatients()">
+            </div>
+            <h3 style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-light);">MIJN PATIENTEN</h3>
+            <div id="patientList">
+                <div class="patient-card selected" onclick="selectPatient(this, 'Maria van den Berg')">
+                    <div class="patient-name">Maria van den Berg</div>
+                    <div class="patient-info">78 jaar | Thuiszorg</div>
+                    <span class="badge badge-warning" style="margin-top: 0.5rem; display: inline-block;">Evaluatie nodig</span>
+                </div>
+                <div class="patient-card" onclick="selectPatient(this, 'Jan Pieters')">
+                    <div class="patient-name">Jan Pieters</div>
+                    <div class="patient-info">65 jaar | Revalidatie</div>
+                    <span class="badge badge-success" style="margin-top: 0.5rem; display: inline-block;">Op schema</span>
+                </div>
+                <div class="patient-card" onclick="selectPatient(this, 'Els de Groot')">
+                    <div class="patient-name">Els de Groot</div>
+                    <div class="patient-info">82 jaar | Palliatief</div>
+                    <span class="badge badge-danger" style="margin-top: 0.5rem; display: inline-block;">Urgent</span>
+                </div>
+                <div class="patient-card" onclick="selectPatient(this, 'Hendrik Smit')">
+                    <div class="patient-name">Hendrik Smit</div>
+                    <div class="patient-info">71 jaar | Chronisch</div>
+                    <span class="badge badge-info" style="margin-top: 0.5rem; display: inline-block;">Nieuw plan</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <h2 style="margin-bottom: 1.5rem;">Dashboard - Maria van den Berg</h2>
+                
+                <div class="alert alert-warning">
+                    <span style="font-size: 1.25rem;">Attentie</span>
+                    <span>Zorgplan evaluatie gepland voor 15 januari 2025 - nog 3 dagen</span>
+                </div>
+
+                <div class="grid grid-3">
+                    <div class="card stat-card">
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">Actieve Doelen</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-value">8</div>
+                        <div class="stat-label">Geplande Interventies</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-value">67%</div>
+                        <div class="stat-label">Voortgang</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Zorgdoelen Voortgang</span>
+                            <button class="btn btn-secondary" onclick="openModal('doelModal')">+ Doel</button>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Mobiliteit verbeteren</span>
+                                <span>75%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: 75%;"></div></div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Medicatie therapietrouw</span>
+                                <span>90%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: 90%;"></div></div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Sociale participatie</span>
+                                <span>45%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: 45%;"></div></div>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Pijnmanagement</span>
+                                <span>60%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: 60%;"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Recente Activiteit</span>
+                        </div>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-date">Vandaag 09:30</div>
+                                <div class="timeline-content">
+                                    <strong>Fysiotherapie sessie</strong><br>
+                                    Oefeningen voor heupflexibiliteit uitgevoerd. Goede vooruitgang.
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-date">Gisteren 14:00</div>
+                                <div class="timeline-content">
+                                    <strong>Medicatie check</strong><br>
+                                    Alle medicatie correct ingenomen. Bloeddruk stabiel.
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-date">10 jan 11:00</div>
+                                <div class="timeline-content">
+                                    <strong>Huisbezoek wijkverpleging</strong><br>
+                                    Wondverzorging uitgevoerd. Genezing verloopt goed.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zorgplannen Tab -->
+            <div id="zorgplannen" class="tab-content">
+                <h2 style="margin-bottom: 1.5rem;">Zorgplan Details</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Probleemgebieden & Interventies</span>
+                        <button class="btn btn-primary" onclick="openModal('interventieModal')">+ Interventie</button>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f0fdf4; border-radius: 8px; border-left: 4px solid var(--secondary);">
+                        <h4 style="margin-bottom: 0.5rem;">1. Beperkte mobiliteit</h4>
+                        <p style="color: var(--text-light); margin-bottom: 0.75rem;">Doel: Zelfstandig 50 meter kunnen lopen met rollator binnen 6 weken</p>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <span class="badge badge-info">Fysiotherapie 2x/week</span>
+                            <span class="badge badge-info">Dagelijkse oefeningen</span>
+                            <span class="badge badge-success">Rollator beschikbaar</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: #fef3c7; border-radius: 8px; border-left: 4px solid var(--accent);">
+                        <h4 style="margin-bottom: 0.5rem;">2. Pijnklachten onderrug</h4>
+                        <p style="color: var(--text-light); margin-bottom: 0.75rem;">Doel: Pijnscore verlagen van 7 naar 4 binnen 4 weken</p>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <span class="badge badge-warning">Pijnmedicatie aanpassen</span>
+                            <span class="badge badge-info">Warmtetherapie</span>
+                            <span class="badge badge-info">Houding correctie</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: #fee2e2; border-radius: 8px; border-left: 4px solid var(--danger);">
+                        <h4 style="margin-bottom: 0.5rem;">3. Risico op vallen</h4>
+                        <p style="color: var(--text-light); margin-bottom: 0.75rem;">Doel: Valrisico verminderen door woningaanpassingen en balans training</p>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <span class="badge badge-danger">Woningaanpassing nodig</span>
+                            <span class="badge badge-info">Balanstraining</span>
+                            <span class="badge badge-success">Beugels geplaatst</span>
+                        </div>
+                    </div>
+
+                    <div style="padding: 1rem; background: #dbeafe; border-radius: 8px; border-left: 4px solid var(--primary);">
+                        <h4 style="margin-bottom: 0.5rem;">4. Medicatiebeheer</h4>
+                        <p style="color: var(--text-light); margin-bottom: 0.75rem;">Doel: 100% therapietrouw door ondersteuning en controle</p>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <span class="badge badge-success">Weekdoos in gebruik</span>
+                            <span class="badge badge-info">Apotheek samenwerking</span>
+                            <span class="badge badge-info">Wekelijkse controle</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Evaluatiemomenten</span>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8fafc;">
+                                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid var(--border);">Datum</th>
+                                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid var(--border);">Type</th>
+                                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid var(--border);">Deelnemers</th>
+                                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid var(--border);">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">15-01-2025</td>
+                                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">Multidisciplinair overleg</td>
+                                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">Arts, Verpleging, Fysio, Familie</td>
+                                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);"><span class="badge badge-warning">Gepland</span></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">01-01-2025</td>
+                                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">Tussentijdse evaluatie</td>
+                                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">Wijkverpleging</td>
+                                <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);"><span class="badge badge-success">Afgerond</span></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.75rem;">15-12-2024</td>
+                                <td style="padding: 0.75rem;">Start zorgplan</td>
+                                <td style="padding: 0.75rem;">Volledig team</td>
+                                <td style="padding: 0.75rem;"><span class="badge badge-success">Afgerond</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Team Tab -->
+            <div id="team" class="tab-content">
+                <h2 style="margin-bottom: 1.5rem;">Zorgteam</h2>
+                
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Betrokken Zorgverleners</span>
+                            <button class="btn btn-secondary">+ Toevoegen</button>
+                        </div>
+                        
+                        <div class="team-member">
+                            <div class="team-avatar" style="background: #2563eb;">SJ</div>
+                            <div>
+                                <div style="font-weight: 600;">Dr. Sarah Janssen</div>
+                                <div style="font-size: 0.85rem; color: var(--text-light);">Huisarts - Coordinator</div>
+                            </div>
+                            <span class="badge badge-info" style="margin-left: auto;">Hoofdbehandelaar</span>
+                        </div>
+                        
+                        <div class="team-member">
+                            <div class="team-avatar" style="background: #10b981;">LV</div>
+                            <div>
+                                <div style="font-weight: 600;">Lisa Vermeer</div>
+                                <div style="font-size: 0.85rem; color: var(--text-light);">Wijkverpleegkundige</div>
+                            </div>
+                        </div>
+                        
+                        <div class="team-member">
+                            <div class="team-avatar" style="background: #f59e0b;">PB</div>
+                            <div>
+                                <div style="font-weight: 600;">Peter de Bruin</div>
+                                <div style="font-size: 0.85rem; color: var(--text-light);">Fysiotherapeut</div>
+                            </div>
+                        </div>
+                        
+                        <div class="team-member">
+                            <div class="team-avatar" style="background: #ef4444;">MK</div>
+                            <div>
+                                <div style="font-weight: 600;">Maria Kok</div>
+                                <div style="font-size: 0.85rem; color: var(--text-light);">Ergotherapeut</div>
+                            </div>
+                        </div>
+                        
+                        <div class="team-member">
+                            <div class="team-avatar" style="background: #8b5cf6;">AJ</div>
+                            <div>
+                                <div style="font-weight: 600;">Anna de Jong</div>
+                                <div style="font-size: 0.85rem; color: var(--text-light);">Maatschappelijk werker</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Mantelzorgers & Familie</span>
+                        </div>
+                        
+                        <div class="team-member">
+                            <div class="team-avatar" style="background: #64748b;">KB</div>
+                            <div>
+                                <div style="font-weight: 600;">Karin van den Berg</div>
+                                <div style="font-size: 0.85rem; color: var(--text-light);">Dochter - Hoofdcontact</div>
+                            </div>
+                            <span class="badge badge-success" style="margin-left: auto;">Actief</span>
+                        </div>
+                        
+                        <div class="team-member">
+                            <div class="team-avatar" style="background: #94a3b8;">JB</div>
+                            <div>
+                                <div style="font-weight: 600;">Johan van den Berg</div>
+                                <div style="font-size: 0.85rem; color: var(--text-light);">Zoon</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                            <h4 style="margin-bottom: 0.75rem;">Contactgegevens</h4>
+                            <p style="font-size: 0.9rem; margin-bottom: 0.5rem;"><strong>Tel:</strong> 06-12345678</p>
+                            <p style="font-size: 0.9rem; margin-bottom: 0.5rem;"><strong>Email:</strong> k.vandenberg@email.nl</p>
+                            <p style="font-size: 0.9rem;"><strong>Voorkeur:</strong> Bellen na 17:00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Taken Tab -->
+            <div id="taken" class="tab-content">
+                <h2 style="margin-bottom: 1.5rem;">Taken & Acties</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Openstaande Taken</span>
+                        <button class="btn btn-primary" onclick="openModal('taakModal')">+ Nieuwe Taak</button>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="t1">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500;">Zorgplan evaluatie voorbereiden</div>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">Dr. Sarah Janssen | Deadline: 14-01-2025</div>
+                        </div>
+                        <span class="badge badge-danger">Urgent</span>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="t2">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500;">Fysiotherapie rapportage opvragen</div>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">Lisa Vermeer | Deadline: 13-01-2025</div>
+                        </div>
+                        <span class="badge badge-warning">Hoog</span>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="t3">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500;">Familie informeren over MDO</div>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">Dr. Sarah Janssen | Deadline: 12-01-2025</div>
+                        </div>
+                        <span class="badge badge-info">Normaal</span>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="t4" checked>
+                        <div style="flex: 1; text-decoration: line-through; opacity: 0.6;">
+                            <div style="font-weight: 500;">Woningaanpassing aanvragen WMO</div>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">Anna de Jong | Afgerond: 10-01-2025</div>
+                        </div>
+                        <span class="badge badge-success">Klaar</span>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="t5" checked>
+                        <div style="flex: 1; text-decoration: line-through; opacity: 0.6;">
+                            <div style="font-weight: 500;">Medicatie review met apotheek</div>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">Dr. Sarah Janssen | Afgerond: 08-01-2025</div>
+                        </div>
+                        <span class="badge badge-success">Klaar</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Planning Deze Week</span>
+                        </div>
+                        <div style="margin-bottom: 0.75rem; padding: 0.75rem; background: #dbeafe; border-radius: 8px;">
+                            <div style="font-weight: 500;">Ma 13 jan - 10:00</div>
+                            <div style="font-size: 0.9rem;">Huisbezoek wijkverpleging</div>
+                        </div>
+                        <div style="margin-bottom: 0.75rem; padding: 0.75rem; background: #fef3c7; border-radius: 8px;">
+                            <div style="font-weight: 500;">Di 14 jan - 14:00</div>
+                            <div style="font-size: 0.9rem;">Fysiotherapie sessie</div>
+                        </div>
+                        <div style="margin-bottom: 0.75rem; padding: 0.75rem; background: #fee2e2; border-radius: 8px;">
+                            <div style="font-weight: 500;">Wo 15 jan - 11:00</div>
+                            <div style="font-size: 0.9rem;">MDO Evaluatie - Alle disciplines</div>
+                        </div>
+                        <div style="padding: 0.75rem; background: #dcfce7; border-radius: 8px;">
+                            <div style="font-weight: 500;">Do 16 jan - 09:30</div>
+                            <div style="font-size: 0.9rem;">Controle huisarts</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Taakstatistieken</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-around; text-align: center;">
+                            <div>
+                                <div style="font-size: 2rem; font-weight: 700; color: var(--danger);">3</div>
+                                <div style="color: var(--text-light); font-size: 0.9rem;">Open</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 2rem; font-weight: 700; color: var(--accent);">1</div>
+                                <div style="color: var(--text-light); font-size: 0.9rem;">In Progress</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 2rem; font-weight: 700; color: var(--secondary);">12</div>
+                                <div style="color: var(--text-light); font-size: 0.9rem;">Afgerond</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Communicatie Tab -->
+            <div id="communicatie" class="tab-content">
+                <h2 style="margin-bottom: 1.5rem;">Communicatie</h2>
+                
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Berichten</span>
+                            <button class="btn btn-primary" onclick="openModal('berichtModal')">+ Nieuw Bericht</button>
+                        </div>
+                        
+                        <div style="padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <strong>Lisa Vermeer</strong>
+                                <span style="font-size: 0.8rem; color: var(--text-light);">Vandaag 10:15</span>
+                            </div>
+                            <p style="font-size: 0.9rem;">Huisbezoek verlopen goed. Patient geeft aan minder pijn te ervaren. Zie rapportage.</p>
+                        </div>
+                        
+                        <div style="padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <strong>Peter de Bruin</strong>
+                                <span style="font-size: 0.8rem; color: var(--text-light);">Gisteren 16:30</span>
+                            </div>
+                            <p style="font-size: 0.9rem;">Mobiliteit verbetert gestaag. Advies: dagelijks 10 min lopen met begeleiding.</p>
+                        </div>
+                        
+                        <div style="padding: 1rem; border: 1px solid var(--border); border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <strong>Karin van den Berg</strong>
+                                <span style="font-size: 0.8rem; color: var(--text-light);">10 jan 09:00</span>
+                            </div>
+                            <p style="font-size: 0.9rem;">Moeder voelt zich beter. Wij kunnen aanwezig zijn bij het MDO op 15 januari.</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Rapportages</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--border);">
+                            <span style="font-size: 1.5rem; margin-right: 0.75rem;">PDF</span>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;">Fysiotherapie Voortgang Rapport</div>
+                                <div style="font-size: 0.85rem; color: var(--text-light);">Peter de Bruin | 11-01-2025</div>
+                            </div>
+                            <button class="btn btn-secondary">Bekijk</button>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--border);">
+                            <span style="font-size: 1.5rem; margin-right: 0.75rem;">PDF</span>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;">Wijkverpleging Dagrapport</div>
+                                <div style="font-size: 0.85rem; color: var(--text-light);">Lisa Vermeer | 12-01-2025</div>
+                            </div>
+                            <button class="btn btn-secondary">Bekijk</button>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; padding: 0.75rem;">
+                            <span style="font-size: 1.5rem; margin-right: 0.75rem;">PDF</span>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500;">Medicatie Overzicht</div>
+                                <div style="font-size: 0.85rem; color: var(--text-light);">Dr. S. Janssen | 08-01-2025</div>
+                            </div>
+                            <button class="btn btn-secondary">Bekijk</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="doelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nieuw Zorgdoel Toevoegen</h3>
+                <button class="modal-close" onclick="closeModal('doelModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Doelomschrijving</label>
+                <input type="text" class="form-input" placeholder="Bijv. Zelfstandig kunnen douchen">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Probleemgebied</label>
+                <select class="form-select">
+                    <option>Mobiliteit</option>
+                    <option>ADL</option>
+                    <option>Medicatie</option>
+                    <option>Sociaal</option>
+                    <option>Pijn</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Streeftermijn</label>
+                <input type="date" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Verantwoordelijke</label>
+                <select class="form-select">
+                    <option>Dr. Sarah Janssen</option>
+                    <option>Lisa Vermeer</option>
+                    <option>Peter de Bruin</option>
+                    <option>Maria Kok</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeModal('doelModal')">Annuleren</button>
+                <button class="btn btn-primary" onclick="saveAndClose('doelModal')">Opslaan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="taakModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nieuwe Taak</h3>
+                <button class="modal-close" onclick="closeModal('taakModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Taakomschrijving</label>
+                <input type="text" class="form-input" placeholder="Beschrijf de taak">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Prioriteit</label>
+                <select class="form-select">
+                    <option>Urgent</option>
+                    <option>Hoog</option>
+                    <option>Normaal</option>
+                    <option>Laag</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Deadline</label>
+                <input type="date" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Toewijzen aan</label>
+                <select class="form-select">
+                    <option>Dr. Sarah Janssen</option>
+                    <option>Lisa Vermeer</option>
+                    <option>Peter de Bruin</option>
+                    <option>Maria Kok</option>
+                    <option>Anna de Jong</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeModal('taakModal')">Annuleren</button>
+                <button class="btn btn-primary" onclick="saveAndClose('taakModal')">Aanmaken</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="berichtModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nieuw Bericht</h3>
+                <button class="modal-close" onclick="closeModal('berichtModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Aan</label>
+                <select class="form-select">
+                    <option>Volledig Zorgteam</option>
+                    <option>Dr. Sarah Janssen</option>
+                    <option>Lisa Vermeer</option>
+                    <option>Peter de Bruin</option>
+                    <option>Familie van den Berg</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Onderwerp</label>
+                <input type="text" class="form-input" placeholder="Onderwerp">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bericht</label>
+                <textarea class="form-textarea" rows="4" placeholder="Typ uw bericht..."></textarea>
+            </div>
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeModal('berichtModal')">Annuleren</button>
+                <button class="btn btn-primary" onclick="saveAndClose('berichtModal')">Versturen</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="interventieModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nieuwe Interventie</h3>
+                <button class="modal-close" onclick="closeModal('interventieModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Probleemgebied</label>
+                <select class="form-select">
+                    <option>Beperkte mobiliteit</option>
+                    <option>Pijnklachten onderrug</option>
+                    <option>Risico op vallen</option>
+                    <option>Medicatiebeheer</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Interventie</label>
+                <input type="text" class="form-input" placeholder="Beschrijf de interventie">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Frequentie</label>
+                <select class="form-select">
+                    <option>Dagelijks</option>
+                    <option>2x per week</option>
+                    <option>Wekelijks</option>
+                    <option>Maandelijks</option>
+                    <option>Eenmalig</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Uitvoerder</label>
+                <select class="form-select">
+                    <option>Wijkverpleging</option>
+                    <option>Fysiotherapeut</option>
+                    <option>Huisarts</option>
+                    <option>Ergotherapeut</option>
+                    <option>Mantelzorger</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeModal('interventieModal')">Annuleren</button>
+                <button class="btn btn-primary" onclick="saveAndClose('interventieModal')">Toevoegen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Navigation
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Patient Selection
+        function selectPatient(element, name) {
+            document.querySelectorAll('.patient-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            document.querySelector('#dashboard h2').textContent = 'Dashboard - ' + name;
+        }
+
+        // Patient Search Filter
+        function filterPatients() {
+            const search = document.getElementById('patientSearch').value.toLowerCase();
+            document.querySelectorAll('.patient-card').forEach(card => {
+                const name = card.querySelector('.patient-name').textContent.toLowerCase();
+                card.style.display = name.includes(search) ? 'block' : 'none';
+            });
+        }
+
+        // Modal Functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function saveAndClose(modalId) {
+            alert('Actie opgeslagen! (Demo)');
+            closeModal(modalId);
+        }
+
+        // Close modal on outside click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                }
+            });
+        });
+
+        // Checkbox interaction
+        document.querySelectorAll('.checklist-item input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const item = this.closest('.checklist-item');
+                const content = item.querySelector('div[style*="flex: 1"]');
+                const badge = item.querySelector('.badge');
+                
+                if (this.checked) {
+                    content.style.textDecoration = 'line-through';
+                    content.style.opacity = '0.6';
+                    badge.className = 'badge badge-success';
+                    badge.textContent = 'Klaar';
+                } else {
+                    content.style.textDecoration = 'none';
+                    content.style.opacity = '1';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
