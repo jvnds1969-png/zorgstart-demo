@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zorgstart Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #67b26f, #4ca2cd); min-height: 100vh; }
+        .header { text-align: center; padding: 2rem; color: white; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .header p { opacity: 0.9; font-size: 1.1rem; }
+        .container { max-width: 900px; margin: 0 auto; padding: 1rem; }
+        .card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .card h2 { color: #333; margin-bottom: 1rem; border-bottom: 2px solid #4ca2cd; padding-bottom: 0.5rem; }
+        .patient-select { width: 100%; padding: 0.75rem; font-size: 1rem; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 1rem; }
+        .btn { background: #4ca2cd; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-right: 0.5rem; margin-bottom: 0.5rem; }
+        .btn:hover { background: #67b26f; }
+        .btn-secondary { background: #6c757d; }
+        .step { display: none; }
+        .step.active { display: block; }
+        .problem-list, .bundle-list, .network-list { list-style: none; }
+        .problem-list li, .bundle-list li, .network-list li { padding: 0.75rem; margin: 0.5rem 0; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #4ca2cd; }
+        .careplan { background: #e8f5e9; padding: 1rem; border-radius: 8px; margin-top: 1rem; }
+        .careplan h3 { color: #2e7d32; margin-bottom: 0.5rem; }
+        .flow { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+        .flow-item { background: #4ca2cd; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; }
+        .flow-arrow { color: #4ca2cd; font-weight: bold; align-self: center; }
+        .status { padding: 0.5rem 1rem; border-radius: 8px; margin: 1rem 0; }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-info { background: #cce5ff; color: #004085; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f8f9fa; }
+        .highlight { background: #fff3cd; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Zorgstart Demo</h1>
+        <p>Van ontslag naar levenslang thuis blijven</p>
+    </div>
+    <div class="container">
+        <div class="card">
+            <div class="flow">
+                <span class="flow-item">Documenten</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">Probleemgebieden</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">Bundels</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">Netwerk</span>
+                <span class="flow-arrow">→</span>
+                <span class="flow-item">Zorgplan</span>
+            </div>
+        </div>
+
+        <div class="card step active" id="step1">
+            <h2>Stap 1: Selecteer Patient</h2>
+            <select class="patient-select" id="patientSelect">
+                <option value="">-- Kies een patient --</option>
+                <option value="jan">Jan Peeters (78 jaar) - Heupoperatie</option>
+                <option value="maria">Maria Janssen (82 jaar) - Hartfalen</option>
+                <option value="peter">Peter De Vries (71 jaar) - CVA</option>
+            </select>
+            <button class="btn" onclick="selectPatient()">Start Analyse</button>
+        </div>
+
+        <div class="card step" id="step2">
+            <h2>Stap 2: Ontslagdocumenten</h2>
+            <div id="documents"></div>
+            <button class="btn" onclick="analyzeProblems()">Analyseer Probleemgebieden</button>
+            <button class="btn btn-secondary" onclick="goToStep(1)">Terug</button>
+        </div>
+
+        <div class="card step" id="step3">
+            <h2>Stap 3: Geidentificeerde Probleemgebieden</h2>
+            <ul class="problem-list" id="problemList"></ul>
+            <button class="btn" onclick="matchBundles()">Match Zorgbundels</button>
+            <button class="btn btn-secondary" onclick="goToStep(2)">Terug</button>
+        </div>
+
+        <div class="card step" id="step4">
+            <h2>Stap 4: Aanbevolen Zorgbundels</h2>
+            <ul class="bundle-list" id="bundleList"></ul>
+            <button class="btn" onclick="buildNetwork()">Bouw Zorgnetwerk</button>
+            <button class="btn btn-secondary" onclick="goToStep(3)">Terug</button>
+        </div>
+
+        <div class="card step" id="step5">
+            <h2>Stap 5: Lokaal Zorgnetwerk</h2>
+            <div id="networkInfo"></div>
+            <ul class="network-list" id="networkList"></ul>
+            <button class="btn" onclick="generateCareplan()">Genereer Zorgplan</button>
+            <button class="btn btn-secondary" onclick="goToStep(4)">Terug</button>
+        </div>
+
+        <div class="card step" id="step6">
+            <h2>Stap 6: Persoonlijk Zorgplan</h2>
+            <div id="careplan"></div>
+            <button class="btn" onclick="goToStep(1)">Nieuwe Patient</button>
+        </div>
+    </div>
+
+    <script>
+        const patients = {
+            jan: {
+                name: "Jan Peeters", age: 78, condition: "Heupoperatie",
+                documents: ["Ontslagbrief orthopedie", "Medicatielijst", "Fysiotherapie advies", "Wondverzorging protocol"],
+                problems: ["Mobiliteit beperkt", "Valrisico verhoogd", "Wondverzorging nodig", "Pijnmanagement"],
+                bundles: ["Revalidatie Thuis", "Valpreventie", "Wondverzorging", "Medicatiebeheer"],
+                network: [
+                    {type: "Fysiotherapeut", name: "Praktijk Van den Berg", distance: "1.2 km"},
+                    {type: "Thuiszorg", name: "ZorgThuis Kempen", distance: "Direct beschikbaar"},
+                    {type: "Huisarts", name: "Dr. Willems", distance: "0.8 km"},
+                    {type: "Apotheek", name: "Apotheek Centrum", distance: "0.5 km"}
+                ]
+            },
+            maria: {
+                name: "Maria Janssen", age: 82, condition: "Hartfalen",
+                documents: ["Cardiologie ontslagbrief", "ECG rapport", "Dieetadvies", "Medicatieschema"],
+                problems: ["Kortademigheid", "Vochtretentie", "Beperkte inspanningstolerantie", "Complexe medicatie"],
+                bundles: ["Hartfalen Monitoring", "Dieetbegeleiding", "Medicatiebeheer", "Bewegingscoaching"],
+                network: [
+                    {type: "Cardioloog", name: "Dr. De Groot - AZ Herentals", distance: "3.5 km"},
+                    {type: "Dietist", name: "Voedingsadvies Plus", distance: "2.1 km"},
+                    {type: "Thuiszorg", name: "ZorgThuis Kempen", distance: "Direct beschikbaar"},
+                    {type: "Huisarts", name: "Dr. Claes", distance: "1.0 km"}
+                ]
+            },
+            peter: {
+                name: "Peter De Vries", age: 71, condition: "CVA",
+                documents: ["Neurologie ontslagbrief", "Revalidatie rapport", "Logopedie advies", "Ergotherapie plan"],
+                problems: ["Halfzijdige verlamming", "Spraakproblemen", "Slikproblemen", "ADL beperkingen"],
+                bundles: ["CVA Revalidatie", "Logopedie", "Ergotherapie", "Mantelzorgondersteuning"],
+                network: [
+                    {type: "Revalidatiearts", name: "Dr. Hermans - Revalidatiecentrum", distance: "5.2 km"},
+                    {type: "Logopedist", name: "Logopedie Praktijk Kempen", distance: "2.8 km"},
+                    {type: "Ergotherapeut", name: "Ergo@Home", distance: "1.5 km"},
+                    {type: "Thuiszorg", name: "ZorgThuis Kempen", distance: "Direct beschikbaar"}
+                ]
+            }
+        };
+
+        let currentPatient = null;
+
+        function goToStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+        }
+
+        function selectPatient() {
+            const select = document.getElementById('patientSelect');
+            if (!select.value) { alert('Selecteer eerst een patient'); return; }
+            currentPatient = patients[select.value];
+            
+            let docsHtml = '<div class="status status-info">Documenten geladen voor ' + currentPatient.name + ' (' + currentPatient.age + ' jaar)</div>';
+            docsHtml += '<table><tr><th>Document</th><th>Status</th></tr>';
+            currentPatient.documents.forEach(doc => {
+                docsHtml += '<tr><td>' + doc + '</td><td>Geanalyseerd</td></tr>';
+            });
+            docsHtml += '</table>';
+            document.getElementById('documents').innerHTML = docsHtml;
+            goToStep(2);
+        }
+
+        function analyzeProblems() {
+            let html = '';
+            currentPatient.problems.forEach(problem => {
+                html += '<li>' + problem + '</li>';
+            });
+            document.getElementById('problemList').innerHTML = html;
+            goToStep(3);
+        }
+
+        function matchBundles() {
+            let html = '';
+            currentPatient.bundles.forEach((bundle, i) => {
+                html += '<li><strong>' + bundle + '</strong> - gekoppeld aan: ' + currentPatient.problems[i] + '</li>';
+            });
+            document.getElementById('bundleList').innerHTML = html;
+            goToStep(4);
+        }
+
+        function buildNetwork() {
+            document.getElementById('networkInfo').innerHTML = '<div class="status status-success">Zorgnetwerk voor regio Herentals opgebouwd</div>';
+            let html = '';
+            currentPatient.network.forEach(provider => {
+                html += '<li><strong>' + provider.type + ':</strong> ' + provider.name + ' <em>(' + provider.distance + ')</em></li>';
+            });
+            document.getElementById('networkList').innerHTML = html;
+            goToStep(5);
+        }
+
+        function generateCareplan() {
+            let html = '<div class="careplan">';
+            html += '<h3>Zorgplan voor ' + currentPatient.name + '</h3>';
+            html += '<p><strong>Diagnose:</strong> ' + currentPatient.condition + '</p>';
+            html += '<p><strong>Startdatum:</strong> ' + new Date().toLocaleDateString('nl-BE') + '</p>';
+            html += '<table><tr><th>Zorgbundel</th><th>Zorgverlener</th><th>Frequentie</th></tr>';
+            currentPatient.bundles.forEach((bundle, i) => {
+                const provider = currentPatient.network[i % currentPatient.network.length];
+                html += '<tr><td>' + bundle + '</td><td>' + provider.name + '</td><td>Volgens protocol</td></tr>';
+            });
+            html += '</table></div>';
+            html += '<div class="status status-success" style="margin-top:1rem;">Zorgplan succesvol gegenereerd en klaar voor coordinatie!</div>';
+            document.getElementById('careplan').innerHTML = html;
+            goToStep(6);
+        }
+    </script>
+</body>
+</html>
